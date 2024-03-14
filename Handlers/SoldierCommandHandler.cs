@@ -19,16 +19,22 @@ public class SoldierCommandHandler : MonoBehaviour
     private void Start()
     {
         SoldierCommandUI.Instance.OnCommandButtonTapped += SoldierCommandUI_OnCommandButtonTapped;
+        SoldierCommandUI.Instance.OnCommandCancelTapped += Instance_OnCommandCancelTapped;
+
         InputHandler.Instance.OnTouchEnded += InputHandler_OnTouchEnded;
 
         InteractIconVisual.OnAnyInteractIconClicked += InteractIconVisual_OnAnyInteractIconClicked; //Listening to any icon clicked on any onteractable player wants to interact with
+    }
+
+    private void Instance_OnCommandCancelTapped() {
+        SetCurrentCommandSO(null);
     }
 
     private void InteractIconVisual_OnAnyInteractIconClicked(Transform _transform) {
         if (currentCommandSO == null && _transform == null) return;
 
         GiveCommandsToSoldiers(_transform.position, _transform);
-    }
+    } //For Interact Command
 
     private void InputHandler_OnTouchEnded() //Get the position where to move or perform action
     {
@@ -49,6 +55,19 @@ public class SoldierCommandHandler : MonoBehaviour
         if (_command == null) return;
 
         SetCurrentCommandSO(_command);
+
+        //Check if we required any extra input
+        if (!_command.requiredInput) {
+            GiveCommandsToSoldiers(Vector3.zero, null);
+        }
+
+        if (_command.requiredItem != null) {
+            //Command uses an item to perform
+            List<Soldier> selectedSoldiers = SoldierSelectionHandler.Instance.GetSelectedUnitsList();
+            for (int i = 0; i < selectedSoldiers.Count; i++) {
+                selectedSoldiers[i].GetComponent<SoldierInventoryLogic>().RemoveItem(_command.requiredItem);
+            }
+        }
     }
 
     private void GiveCommandsToSoldiers(Vector3 _position, Transform _transform)
@@ -69,6 +88,9 @@ public class SoldierCommandHandler : MonoBehaviour
                 break;
 
             case CommandsSO.Command.Interact:
+
+                if (_transform == null) return; //Player is taping somewhere else
+
                 for (int i = 0; i < selectedSoldiers.Count; i++) {
                     selectedSoldiers[i].GiveCommand(new CompositeCommand(new List<ICommand>()
                     {
@@ -78,6 +100,10 @@ public class SoldierCommandHandler : MonoBehaviour
                 }
 
                 SetCurrentCommandSO(null);
+                break;
+
+            default:
+                Debug.Log(currentCommandSO.commandType);
                 break;
         }
     }

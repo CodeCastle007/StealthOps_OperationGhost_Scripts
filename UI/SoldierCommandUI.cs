@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class SoldierCommandUI : MonoBehaviour
 {
@@ -15,36 +16,60 @@ public class SoldierCommandUI : MonoBehaviour
 
     [SerializeField] private Transform container;
     [SerializeField] private List<CommandButtonUI> commandButtonsList;
+    [SerializeField] private Button cancelCommandButton;
 
     private List<Soldier> selectedSoldierList;
     public event Action<CommandsSO> OnCommandButtonTapped;
-
+    public event Action OnCommandCancelTapped;
     private void Start()
     {
         SoldierSelectionHandler.Instance.OnSelectedSoldierChanged += SoldierSelectionHandler_OnSelectedSoldierChanged;
         CommandButtonUI.OnCommandButtonTapped += CommandButtonUI_OnCommandButtonTapped; //Listening to static event on buttons
+        SoldierInventoryLogic.OnInventoryItemsChanged += SoldierInventoryLogic_OnInventoryItemsChanged;
+
+        cancelCommandButton.onClick.AddListener(() =>
+        {
+            SetCancelCommandButton(false);
+            OnCommandCancelTapped?.Invoke();
+        });
+    }
+
+    private void SoldierInventoryLogic_OnInventoryItemsChanged() {
+        //Getting the selected list
+        selectedSoldierList = SoldierSelectionHandler.Instance.GetSelectedUnitsList();
+
+        if (selectedSoldierList.Count > 0) {
+            GetCommandsToSet();  //Get Commands from selected soldier/s to set
+        }
     }
 
     private void CommandButtonUI_OnCommandButtonTapped(CommandsSO _command)
     {
         OnCommandButtonTapped?.Invoke(_command);
+
+        //If we are waiting for input then we will activate the cancel button
+        if (_command.requiredInput) {
+            SetCancelCommandButton(true);
+        }
+        
     }
 
     private void SoldierSelectionHandler_OnSelectedSoldierChanged()
     {
         //Getting the selected list
         selectedSoldierList = SoldierSelectionHandler.Instance.GetSelectedUnitsList();
-
-        GetCommandsToSet(); //Get Commands from selected soldier/s to set
+        if(selectedSoldierList.Count> 0) {
+            GetCommandsToSet();  //Get Commands from selected soldier/s to set
+        }
+        else {
+            SetCancelCommandButton(false);
+            ClearCommandIcons();
+        }
+        
     }
 
     private void GetCommandsToSet()
     {
-        if (selectedSoldierList.Count <= 0) {
-            ClearCommandIcons();
-            return;
-        }
-
         if(selectedSoldierList.Count > 1)
         {
             ClearCommandIcons();
@@ -84,10 +109,29 @@ public class SoldierCommandUI : MonoBehaviour
             //We have more commands than buttons
             Debug.LogError("Commands count is more than buttons....");
         }
-
+        //Set the icons here
         for (int i = 0; i < _commandSO.Count; i++)
         {
             commandButtonsList[i].SetButton(_commandSO[i].icon, _commandSO[i]);
+        }
+
+        //Looping through all buttons
+        for (int i = 0; i < _commandSO.Count; i++) {
+
+            for (int j = 0; j < selectedSoldierList.Count; j++) {
+
+                //Check if we require item to perform this command
+                if (_commandSO[i].requiredItem != null) {
+                    //Check if all soldiers contain the items required for command
+                    if (!selectedSoldierList[j].GetComponent<SoldierInventoryLogic>().Contains(_commandSO[i].requiredItem)) {
+                        commandButtonsList[i].GetComponent<Button>().interactable = false;
+                    }
+                    else {
+                        commandButtonsList[i].GetComponent<Button>().interactable = true;
+                    }
+                }
+                
+            }
         }
     }
 
@@ -97,12 +141,7 @@ public class SoldierCommandUI : MonoBehaviour
         }
     }
 
-    private void Show()
-    {
-        container.gameObject.SetActive(true);
-    }
-    private void Hide()
-    {
-        container.gameObject.SetActive(false);
+    private void SetCancelCommandButton(bool _status) {
+        cancelCommandButton.gameObject.SetActive(_status);
     }
 }

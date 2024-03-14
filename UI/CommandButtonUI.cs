@@ -20,6 +20,10 @@ public class CommandButtonUI : MonoBehaviour
         });
     }
 
+    private void OnDestroy() {
+        OnCommandButtonTapped = null;
+    }
+
     public void SetButton(Sprite _icon, CommandsSO _command)
     {
         icon.sprite = _icon;

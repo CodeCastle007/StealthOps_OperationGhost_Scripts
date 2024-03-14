@@ -9,6 +9,8 @@ public class SoldierSelectionHandler : MonoBehaviour
     public static SoldierSelectionHandler Instance{get; private set;}
     private void Awake(){
         Instance=this;
+
+        selectedSoldierList = new List<Soldier>();
     }
     #endregion
 
@@ -18,10 +20,10 @@ public class SoldierSelectionHandler : MonoBehaviour
     public event Action OnSelectedSoldierChanged;
     private bool canSelect = true; //A bool to determine whether we can perform selection or not
 
+
     private void Start()
     {
         inputHandler = InputHandler.Instance;
-        selectedSoldierList = new List<Soldier>();
 
         inputHandler.OnTouchEnded += InputHandler_OnFingerUp;
         inputHandler.OnTouchStart += InputHandler_OnTouchStart;
