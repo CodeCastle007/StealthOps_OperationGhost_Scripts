@@ -8,11 +8,23 @@ public class GameHandler : MonoBehaviour
     public static GameHandler Instance { get;private set; }
     private void Awake() {
         Instance = this;
+
+        if (displayFpsCounter) {
+            fpsUI.gameObject.SetActive(true);
+        }
+        if (displayRamUsage) {
+            ramUsageUI.gameObject.SetActive(true);
+        }
     }
     #endregion
 
     [SerializeField] private Transform soldierSpawnPoint;
     [SerializeField] private List<SoldierSO> soldierSOList; //LATER REPLACE WITH LIST
+
+    [SerializeField] private Transform fpsUI;
+    [SerializeField] private Transform ramUsageUI;
+    [SerializeField] private bool displayFpsCounter;
+    [SerializeField] private bool displayRamUsage;
 
     private List<Transform> spawnedSoldiers;
 
@@ -23,6 +35,12 @@ public class GameHandler : MonoBehaviour
         for (int i = 0; i < soldierSOList.Count; i++) {
             spawnedSoldiers.Add(Instantiate(soldierSOList[i].prefab));
         }
+    }
+
+    private void Start() {
+       
+
+
     }
 
     private void Update() {

@@ -24,4 +24,14 @@ public class Health : MonoBehaviour
             OnZeroHealth?.Invoke();
         }
     }
+
+    public void IncreaseHealth(float _health) {
+        currentHealth+= _health;
+
+        if (currentHealth > totalHealth) {
+            currentHealth = totalHealth;
+        }
+
+        OnHealthChange?.Invoke(currentHealth / totalHealth);
+    }
 }

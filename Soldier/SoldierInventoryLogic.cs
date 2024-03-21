@@ -65,7 +65,6 @@ public class SoldierInventoryLogic : MonoBehaviour
     }
 
     public void RemoveItem(InteractableItemSO _interactableSO) {
-
         if (inventory[_interactableSO] > 1) {
             //We have more than similar item so remove only one
             inventory[_interactableSO]--;

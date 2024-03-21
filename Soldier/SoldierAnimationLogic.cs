@@ -3,17 +3,22 @@ using UnityEngine;
 public class SoldierAnimationLogic : MonoBehaviour
 {
     private Animator animator;
-    private SoldierInteractionLogic soldierInteractionLogic;
-
+    
     private const string PICKUP = "PickUp";
+    private const string HEAL = "Heal";
 
     private bool hasPlayedAnimation;
 
     private void Start() {
         animator = GetComponent<Animator>();
-        soldierInteractionLogic=GetComponent<SoldierInteractionLogic>();
+        
+        GetComponent<SoldierInteractionLogic>().OnInteractPerformed += SoldierInteractionLogic_OnInteractPerformed;
+        GetComponent<SoldierHealingLogic>().OnHealPerformed += SoldierAnimationLogic_OnHealPerformed;
+    }
 
-        soldierInteractionLogic.OnInteractPerformed += SoldierInteractionLogic_OnInteractPerformed;
+    private void SoldierAnimationLogic_OnHealPerformed() {
+        hasPlayedAnimation = false;
+        PlayHealAnimation();
     }
 
     private void SoldierInteractionLogic_OnInteractPerformed(IInteractable _interactable) {
@@ -29,12 +34,15 @@ public class SoldierAnimationLogic : MonoBehaviour
     public void PlayPickUpAnimation() {
         animator.SetTrigger(PICKUP);
     }
+    public void PlayHealAnimation() {
+        animator.SetTrigger(HEAL);
+    }
 
     //Called by event on animation
     public void ToggleAnimationStatus() {
         hasPlayedAnimation = true;
     }
-    //Called by SoldierInteractionLogic
+    //Called by SoldierInteractionLogic, SoldierHealLogic
     public bool HasPlayedAnimation() {
         return hasPlayedAnimation;
     }

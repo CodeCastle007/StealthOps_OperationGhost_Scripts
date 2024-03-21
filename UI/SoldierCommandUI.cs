@@ -45,6 +45,8 @@ public class SoldierCommandUI : MonoBehaviour
 
     private void CommandButtonUI_OnCommandButtonTapped(CommandsSO _command)
     {
+        if (_command == null) return;
+
         OnCommandButtonTapped?.Invoke(_command);
 
         //If we are waiting for input then we will activate the cancel button

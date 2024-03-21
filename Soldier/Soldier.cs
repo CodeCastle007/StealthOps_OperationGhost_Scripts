@@ -10,6 +10,8 @@ public class Soldier : MonoBehaviour
     private SoldierMovementLogic soldierMovementLogic;
     private SoldierInteractionLogic soldierInteractionLogic;
     private SoldierSelectionLogic soldierSelectionLogic;
+    private SoldierHealingLogic soldierHealingLogic;
+    private SoldierInventoryLogic soldierInventoryLogic;
 
    // private Queue<ICommand> waitingCommandQueue;
 
@@ -21,6 +23,8 @@ public class Soldier : MonoBehaviour
         soldierMovementLogic = GetComponent<SoldierMovementLogic>();
         soldierSelectionLogic = GetComponent<SoldierSelectionLogic>();
         soldierInteractionLogic=GetComponent<SoldierInteractionLogic>();
+        soldierHealingLogic=GetComponent<SoldierHealingLogic>();
+        soldierInventoryLogic = GetComponent<SoldierInventoryLogic>();
     }
 
 
@@ -72,6 +76,11 @@ public class Soldier : MonoBehaviour
     }
     public void Interact(IInteractable _interactable) {
         soldierInteractionLogic.InteractWithInteractable(_interactable);
+    }
+
+    public void Heal(InteractableItemSO _requiredItemSO) {
+        soldierHealingLogic.Heal(); //Heal Soldier
+        soldierInventoryLogic.RemoveItem(_requiredItemSO); //Remove item from inventory
     }
 
     public SoldierSO GetSoldierSO() {

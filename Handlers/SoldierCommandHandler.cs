@@ -16,6 +16,8 @@ public class SoldierCommandHandler : MonoBehaviour
 
     public event Action OnCurrentCommandChange;
 
+    private InteractableItemSO requiredItemSO;
+
     private void Start()
     {
         SoldierCommandUI.Instance.OnCommandButtonTapped += SoldierCommandUI_OnCommandButtonTapped;
@@ -56,18 +58,18 @@ public class SoldierCommandHandler : MonoBehaviour
 
         SetCurrentCommandSO(_command);
 
+
+        if (_command.requiredItem != null) {
+            //Command uses an item to perform
+            requiredItemSO = _command.requiredItem; //Caching field to send to soldier which will remove it from inventory
+        }
+
         //Check if we required any extra input
         if (!_command.requiredInput) {
             GiveCommandsToSoldiers(Vector3.zero, null);
         }
 
-        if (_command.requiredItem != null) {
-            //Command uses an item to perform
-            List<Soldier> selectedSoldiers = SoldierSelectionHandler.Instance.GetSelectedUnitsList();
-            for (int i = 0; i < selectedSoldiers.Count; i++) {
-                selectedSoldiers[i].GetComponent<SoldierInventoryLogic>().RemoveItem(_command.requiredItem);
-            }
-        }
+       
     }
 
     private void GiveCommandsToSoldiers(Vector3 _position, Transform _transform)
@@ -80,6 +82,7 @@ public class SoldierCommandHandler : MonoBehaviour
                 for (int i = 0; i < selectedSoldiers.Count; i++){
                     selectedSoldiers[i].GiveCommand(new CompositeCommand(new List<ICommand>()
                     {
+                        //Giving position to move to
                         new MoveCommand(_position, selectedSoldiers[i])
                     }));
                 }
@@ -102,8 +105,15 @@ public class SoldierCommandHandler : MonoBehaviour
                 SetCurrentCommandSO(null);
                 break;
 
-            default:
-                Debug.Log(currentCommandSO.commandType);
+            case CommandsSO.Command.Heal:
+                for (int i = 0; i < selectedSoldiers.Count; i++) {
+                    selectedSoldiers[i].GiveCommand(new CompositeCommand(new List<ICommand>()
+                    {
+                        new HealCommand(requiredItemSO,selectedSoldiers[i])
+                    }));
+                }
+
+                SetCurrentCommandSO(null);
                 break;
         }
     }
